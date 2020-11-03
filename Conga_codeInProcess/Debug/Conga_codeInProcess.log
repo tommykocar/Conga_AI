@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(356,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(410,20): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(458,20): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(355,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(409,20): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Conga_AI\Conga_codeInProcess\main.cpp(460,20): warning C4018: '<': signed/unsigned mismatch
   Conga_codeInProcess.vcxproj -> C:\repos\Conga_AI\Conga_codeInProcess\Debug\Conga_codeInProcess.exe

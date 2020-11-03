@@ -202,7 +202,7 @@ vector<PossibleMoves> findMoves(struct CELL board[4][4], Player player) {
 				else if (i == 3) {
 					if (board[i][j + 1].player == player || board[i][j + 1].player == openSquare) moveList.push_back(PossibleMoves(i, j, 0, 1, true));
 
-					if (board[i - 1][j + 1].player == player || board[i - 1][j + 1].player == openSquare) moveList.push_back(PossibleMoves(i, j, 1, 1, true));
+					if (board[i - 1][j + 1].player == player || board[i - 1][j + 1].player == openSquare) moveList.push_back(PossibleMoves(i, j, -1, 1, true));
 
 					if (board[i - 1][j].player == player || board[i - 1][j].player == openSquare) moveList.push_back(PossibleMoves(i, j, -1, 0, true));
 
@@ -369,7 +369,7 @@ struct PossibleMoves RandomAgentturn(struct CELL board[4][4]) {
 // This function is here to traverse through the tree using MINIMAX and ALPHA-BETA PRUNNING. This is the function that we call multiple times to make the moves down the tree and then
 // once we get to the depth we want we the return the value from the evaluation function for whatever node we are at and go back up to the tree
 // bringing the values that are best for whoevers turn it is (MAX, MIN) to pick the best move possible if we were playing an optimal person
-int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numMove, Player player, int prune) {
+int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numMove, Player player, int Alpha, int Beta) {
 
 	vector<PossibleMoves> moveList;
 	int bestMove, holder;
@@ -379,7 +379,7 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 	PlayersMoveMade(newMove.i, newMove.j, newMove.directionI, newMove.directionJ, PlayedBoard);	// makes the move we sent in newMove in the newBoard so then we can evaluate it later
 	
 	
-	if (numMove == 3) {
+	if (numMove == 4) {
 		
 		return evaluationFunction(PlayedBoard);					// it has reached the depth we want to evaluate from so it returns the value of the evaluation function
 	}
@@ -403,38 +403,40 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 	// Since it's not random order it is just based off of how I find them in the move list and we just go through starting
 	// from the beginning of the list. In those terms I guess you could say they are random for thier values so still could
 	// cause us to get the O(b^3h/4)
-	bestMove = (player == MIN ? 5000 : -5000);				// sets the first prunning value, which will be a very high number to signify positive and negative infinity
-	nextPlayer = (player == MIN ? MAX : MIN);		// makes the next player for the next move
+	bestMove = (player == MIN ? 5000 : -5000);
+	nextPlayer = (player == MIN ? MAX : MIN);				// makes the next player for the next move
 	holder = 0;												// uses to hold the value that is returned from the evaluation function to compare against the best move so far
 	for (int i = 0; i < moveList.size(); i++) {
 		
 		// calls this function again but with the nexts players move list, numMoves made is 1 higher, the board is the
 		// newBoard we made the move on, and the bestMove is now the prunning value for the next node we search
-		holder = TraverseTree(PlayedBoard, moveList[i], numMove + 1, nextPlayer, bestMove);		 
+		holder = TraverseTree(PlayedBoard, moveList[i], numMove + 1, nextPlayer, Alpha, Beta);		 
 		
 		if (player == MIN) {
-			//based on whos turn it is we check to see what values to prune we check to see if holder value meets the requirment.
-			// I set the prune to be the opposite of what it is first so then it can search all the nodes of the first child. Example
-			// I search depth 3 so at first it will search all the children of MAX first and then pass its value up to MIN. So then when MIN goes
-			// to search its next child it does prune if the value we just passed up from MAX is less then any value found at the other children of the second
-			// Max child we prune the rest and stick with the first path and then go search the other children of MIN based on how many it has it all values
-			// are backed up to the root node to signify the best move
-			if (holder < prune) {
-				
-				return holder;			// returns holder as it is a worse move so we want to let the MAX node to stick with the move it has already found
-			}
-			else if (holder < bestMove) {
+			// for the MIN node we set the beta whenever we find a move that bestMove from holder so then we can test if 
+			// we need to prune or not by seeing it the new beta is less then or equal too alpha. This helps us prune to traverse tree faster
+			// and expand less nodes
+			if (holder < bestMove) {
 				bestMove = holder;
+				Beta = bestMove;
+			}
+			
+			if (Alpha >= Beta) {
+
+				return holder;			// returns holder as it is a worse move so we want to let the MAX node to stick with the move it has already found
 			}
 		}
 		else {
-			// prunning is explained in white players if statement. Just the way we pruned values is different but same theory
-			if (holder > prune) {
-				
-				return holder;				// returns holder as it is a worse move so we want to let the MIN node to stick with the move it has found already
-			}
-			else if (holder > bestMove) {
+			// This is the same thing as stated up by MIN node but for MAX node we set the alpha value for every best move we find and 
+			// then check if alpha is greater then or equal too beta
+			if (holder > bestMove) {
 				bestMove = holder;			// places better move in our bestMove variable
+				Alpha = bestMove;
+			}
+			
+			if (Alpha >= Beta) {
+
+				return holder;				// returns holder as it is a worse move so we want to let the MIN node to stick with the move it has found already
 			}
 		}
 	}
@@ -443,11 +445,10 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 }
 
 
-struct PossibleMoves MAXturn(struct CELL board[4][4]) {
-	vector<PossibleMoves> moveList = findMoves(board, MAX);		// finds available moves for the black player		
+struct PossibleMoves MAXturn(struct CELL board[4][4]) {	
 	PossibleMoves move;
-	int evaluation = -5000, holder, highestRatedMove;								// to start the prunning value off with this number
-
+	int Alpha = -5000, Beta = 5000, holder, highestRatedMove;								// to start the prunning value off with this number
+	vector<PossibleMoves> moveList = findMoves(board, MAX);		// finds available moves for the black player	
 
 	
 
@@ -455,10 +456,10 @@ struct PossibleMoves MAXturn(struct CELL board[4][4]) {
 	// for it to win the game. It stores the bestMove in bestMove and stores the value in evaluation
 	// so then we can keep comparing that value against the other moves values to see if they are better or not.
 	for (int i = 0; i < moveList.size(); i++) {
-		holder = TraverseTree(board, moveList[i], 0, MAX, evaluation);		//evaluates the moves with our MINIMAX, Prunning and evaluation function
-		if (holder > evaluation) {
+		holder = TraverseTree(board, moveList[i], 0, MAX, Alpha, Beta);		//evaluates the moves with our MINIMAX, Prunning and evaluation function
+		if (holder > Alpha) {
 			highestRatedMove = i;					// bestMove is not whatever move is at that spot in the vector moveList
-			evaluation = holder;					// stores value in evaluation to compare against others moves against it
+			Alpha = holder;					// stores value in evaluation to compare against others moves against it
 		}
 	}
 
