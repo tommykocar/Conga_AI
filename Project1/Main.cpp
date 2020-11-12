@@ -1,6 +1,4 @@
 
-
-
 // File: Main.cpp - Main function implementation
 //
 // This is the main cpp which holds the main function and all the other methods/functions we have created to run the code.
@@ -60,11 +58,14 @@ void DisplayCongaBoard(struct CELL board[4][4]) {
 /*
 	This function controls which evaluation function MAX will use. This is necessary to choose between different evaluation
 	functions tested without having to constantly change the name of the each evaluation function
-*/
+
+	This function somehow seemed to increase the moves played per game, so it was used for testing/debugging then removed
+
 int (*evaluationFunction)(struct CELL[4][4]);	// intialize function pointer to evaluationFunction()
 void chooseEvaluationFunction(int evalFunc(struct CELL[4][4])) {
 	evaluationFunction = evalFunc;	// set evaluationFunction() for MAX to use from the inputted evalFunc
 };
+*/
 
 // This right here is one of our evaluation function of how we find the best move to make for the AI Agent. 
 // This evaluation function counts up the cells occupied by MAX(black) and subtracts it against the number of cells occupied by MIN(white).
@@ -89,10 +90,203 @@ int evaluationFunctionCellDifferential(struct CELL board[4][4]) {
 }
 
 
-// This right here is our evaluation function of how we find the best move to make for the AI Agent. Our evaluation function counts up the cells
+// This right here is another one of our evaluation function of how we find the best move to make for the AI Agent. 
+// This evaluation function counts up the number of possible moves for MAX(black) and subtracts it against the number of possible moves for MIN(white).
+// This helps us figure out the move diferential between the two players. The goal is to reduced the number of possible moves for MIN to zero. 
+// The less moves MIN can make, the higher the probability is that black is winning (though not necessarily)
+int evaluationFunctionMoves(struct CELL board[4][4]) {
+
+	int numofMAXmoves = 0, numofMINmoves = 0;
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (board[i][j].player == MAX) {
+				// These if statements are exactly like the ones in move list. As we want to see how many moves are available to the MIN player
+				// from that cell so the if statements are all based on the specific cell they are in so we don't have to go through 8 if statements everytime.
+				// This will allow us to see how many moves the white player will have left if we make this move allowing us to block as many cells as possible.
+				if (j == 0) {
+					if (i == 0) {
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i + 1][j + 1].player == MAX || board[i + 1][j + 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i - 1][j + 1].player == MAX || board[i - 1][j + 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+
+					}
+					else {
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+						if (board[i + 1][j + 1].player == MAX || board[i + 1][j + 1].player == openSquare)	numofMAXmoves++;
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+						if (board[i - 1][j + 1].player == MAX || board[i - 1][j + 1].player == openSquare)	numofMAXmoves++;
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+					}
+				}
+				else if (j == 1 || j == 2) {
+					if (i == 0) {
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i + 1][j + 1].player == MAX || board[i + 1][j + 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+
+						if (board[i + 1][j - 1].player == MAX || board[i + 1][j - 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i - 1][j - 1].player == MAX || board[i - 1][j - 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+
+						if (board[i - 1][j + 1].player == MAX || board[i - 1][j + 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+					}
+					else {
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+						if (board[i + 1][j + 1].player == MAX || board[i + 1][j + 1].player == openSquare)	numofMAXmoves++;
+						if (board[i][j + 1].player == MAX || board[i][j + 1].player == openSquare)		numofMAXmoves++;
+						if (board[i - 1][j + 1].player == MAX || board[i - 1][j + 1].player == openSquare)	numofMAXmoves++;
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+						if (board[i - 1][j - 1].player == MAX || board[i - 1][j - 1].player == openSquare)	numofMAXmoves++;
+						if (board[i + 1][j - 1].player == MAX || board[i + 1][j - 1].player == openSquare)	numofMAXmoves++;
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+					}
+				}
+				else if (j == 3) {
+					if (i == 0) {
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i + 1][j - 1].player == MAX || board[i + 1][j - 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+
+						if (board[i - 1][j - 1].player == MAX || board[i - 1][j - 1].player == openSquare)	numofMAXmoves++;
+
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+					}
+					else {
+						if (board[i + 1][j].player == MAX || board[i + 1][j].player == openSquare)		numofMAXmoves++;
+						if (board[i - 1][j].player == MAX || board[i - 1][j].player == openSquare)		numofMAXmoves++;
+						if (board[i - 1][j - 1].player == MAX || board[i - 1][j - 1].player == openSquare)	numofMAXmoves++;
+						if (board[i + 1][j - 1].player == MAX || board[i + 1][j - 1].player == openSquare)	numofMAXmoves++;
+						if (board[i][j - 1].player == MAX || board[i][j - 1].player == openSquare)		numofMAXmoves++;
+					}
+				}
+			}
+			else if (board[i][j].player == MIN) {
+
+				// These if statements are exactly like the ones in move list. As we want to see how many moves are available to the MIN player
+				// from that cell so the if statements are all based on the specific cell they are in so we don't have to go through 8 if statements everytime.
+				// This will allow us to see how many moves the white player will have left if we make this move allowing us to block as many cells as possible.
+				if (j == 0) {
+					if (i == 0) {
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i + 1][j + 1].player == MIN || board[i + 1][j + 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i - 1][j + 1].player == MIN || board[i - 1][j + 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+
+					}
+					else {
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i + 1][j + 1].player == MIN || board[i + 1][j + 1].player == openSquare)	numofMINmoves++;
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j + 1].player == MIN || board[i - 1][j + 1].player == openSquare)	numofMINmoves++;
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+					}
+				}
+				else if (j == 1 || j == 2) {
+					if (i == 0) {
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i + 1][j + 1].player == MIN || board[i + 1][j + 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+
+						if (board[i + 1][j - 1].player == MIN || board[i + 1][j - 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i - 1][j - 1].player == MIN || board[i - 1][j - 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j + 1].player == MIN || board[i - 1][j + 1].player == openSquare)	numofMINmoves++;
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+					}
+					else {
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i + 1][j + 1].player == MIN || board[i + 1][j + 1].player == openSquare)	numofMINmoves++;
+						if (board[i][j + 1].player == MIN || board[i][j + 1].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j + 1].player == MIN || board[i - 1][j + 1].player == openSquare)	numofMINmoves++;
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j - 1].player == MIN || board[i - 1][j - 1].player == openSquare)	numofMINmoves++;
+						if (board[i + 1][j - 1].player == MIN || board[i + 1][j - 1].player == openSquare)	numofMINmoves++;
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+					}
+				}
+				else if (j == 3) {
+					if (i == 0) {
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i + 1][j - 1].player == MIN || board[i + 1][j - 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+					}
+					else if (i == 3) {
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+
+						if (board[i - 1][j - 1].player == MIN || board[i - 1][j - 1].player == openSquare)	numofMINmoves++;
+
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+					}
+					else {
+						if (board[i + 1][j].player == MIN || board[i + 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j].player == MIN || board[i - 1][j].player == openSquare)		numofMINmoves++;
+						if (board[i - 1][j - 1].player == MIN || board[i - 1][j - 1].player == openSquare)	numofMINmoves++;
+						if (board[i + 1][j - 1].player == MIN || board[i + 1][j - 1].player == openSquare)	numofMINmoves++;
+						if (board[i][j - 1].player == MIN || board[i][j - 1].player == openSquare)		numofMINmoves++;
+					}
+				}
+			}
+		}
+	}
+
+	if (numofMINmoves++ == 0) {
+		return 50;	// returns a very large value to signify that this move allowed us to win so this is the move that is the best and no one can beat it
+	}
+	else {
+		return numofMAXmoves - numofMINmoves++;	// Gives us the value to fill us in if this is a good move or a bad move for the AI agent
+	}
+}
+
+
+// This right here is best evaluation function of how we find the best move to make for the AI Agent. Our evaluation function counts up the cells
 // that the MAX player is filling up and subtracts it against the possible moves the MIN player can make. This helps us figure out how many cells we
 // can move to, in order for them to not have as many or any cells to move to making us the winner of the game
-int evaluationFunctionOG(struct CELL board[4][4]) {
+int evaluationFunction(struct CELL board[4][4]) {
 
 	int numofMAXseeds = 0, numofMINmoves = 0;
 
@@ -307,7 +501,7 @@ vector<PossibleMoves> findMoves(struct CELL board[4][4], Player player) {
 void PlayersMoveMade(struct CELL board[4][4], int row, int col, int directionRow, int directionCol) {
 	Player player = board[row][col].player;					// takes the player at the cell we are starting/moving from
 	int value = board[row][col].count;						// takes the value at the cell we are starting/moving from
-	int holdX = row, holdY = col, spacesPossible = 0;		// holds the x and y values to see how many possible cells are open or the cells that we can move 
+	int holdRow = row, holdCol = col, spacesPossible = 0;		// holds the row and col values to see how many possible cells are open or the cells that we can move 
 														// by going toward the direction until there are no more cells that direction or there is the opponent blocking us from moving again
 
 	// this for loop goes through 3 times as that is the most possible cells you can travel in one move.
@@ -315,9 +509,9 @@ void PlayersMoveMade(struct CELL board[4][4], int row, int col, int directionRow
 	// or it will stop if their is an opponent in the way
 	for (int i = 0; i < 3; i++)
 	{
-		holdX += directionRow;
-		holdY += directionCol;
-		if ((holdX + directionRow) > 3 || (holdX + directionRow) < 0 || (holdY + directionCol) > 3 || (holdY + directionCol) < 0 || board[holdX + directionRow][holdY + directionCol].player == (player == MAX ? MIN : MAX))
+		holdRow += directionRow;
+		holdCol += directionCol;
+		if ((holdRow + directionRow) > 3 || (holdRow + directionRow) < 0 || (holdCol + directionCol) > 3 || (holdCol + directionCol) < 0 || board[holdRow + directionRow][holdCol + directionCol].player == (player == MAX ? MIN : MAX))
 		{
 			break;
 		}
@@ -398,9 +592,9 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 	vector<PossibleMoves> moveList;
 	int bestMove, holder;
 	Player nextPlayer;
-	struct CELL PlayedBoard[4][4];	// creates a new Board 
-	copyboard(PlayedBoard, board);	// makes the new Board identical to board to make it identical to the original board
-	PlayersMoveMade(PlayedBoard, newMove.row, newMove.col, newMove.directionRow, newMove.directionCol);	// makes the move we sent in newMove in the new Board so then we can evaluate it later
+	struct CELL PlayedBoard[4][4];	// creates a newBoard 
+	copyboard(PlayedBoard, board);	// makes the newBoard identical to board to make it identical to the original board
+	PlayersMoveMade(PlayedBoard, newMove.row, newMove.col, newMove.directionRow, newMove.directionCol);	// makes the move we sent in newMove in the newBoard so then we can evaluate it later
 
 	if (numMove == 4) {
 		return evaluationFunction(PlayedBoard);	// it has reached the depth we want to evaluate from so it returns the value of the evaluation function
@@ -488,9 +682,11 @@ struct PossibleMoves MaxTurn(struct CELL board[4][4]) {
 	return move;
 }
 
-int main() {
-	struct CELL board[4][4];
-
+/*
+	Initializes conga board with the starting location for each player and their stones.
+	This function is used to initialize the board and clear/reset the board to replay a game
+*/
+void initializeBoard(struct CELL board[4][4]) {
 	// this sets the board to be filled with nothing besides zeros and the opensquare player
 	// to signify that the spots are open to move to.
 	for (int i = 0; i < 4; i++) {
@@ -508,19 +704,26 @@ int main() {
 	board[3][3].count = 10;
 
 	cout << "CONGA" << endl;
+}
+
+int main() {
+	struct CELL board[4][4];
+
+	initializeBoard(board);
 
 	// choose which evaluation function for the AI agent (MAX) to use. 
 	// this allows us to easily change the evalulation function in use to easily compare them
-	chooseEvaluationFunction(evaluationFunctionOG);	// seems like this is somehow increased moves played but not sure, might be anecdotal evidence
+	// chooseEvaluationFunction(evaluationFunctionCombo);	// seems like this is somehow increased moves played but not sure (removed)
 
 	// MAX and MIN take turns making moves based on the rules of Conga
 	struct PossibleMoves maxTurn, minTurn;
 	int movesPlayed = 0;
+	char c; //used for "play again" feature
 	while (true)
 	{
 		maxTurn = MaxTurn(board);	// returns move made on board for MAX player (AI Agent)
-		//cout << "MAX moved: x=" <<turn.row << ", y=" << turn.col << endl;		// displays what cell/seed/piece the MAX player moved
 		if (maxTurn.movesAccessible == true) {
+			// display what cell and direction the MAX player moved where
 			cout << "MAX moved (" << maxTurn.row << ", " << maxTurn.col << ") dirRow: " << maxTurn.directionRow << " dirCol: " << maxTurn.directionCol << endl;
 			DisplayCongaBoard(board);
 			movesPlayed++;
@@ -528,19 +731,33 @@ int main() {
 		else {
 			cout << "MIN won!!" << endl;
 			cout << "GAME OVER - MOVE COUNT: " << movesPlayed << endl;	// displays move count as game is over and MAX player has won
-			break;
+
+			cout << "Press 'P' then Enter to play again." << endl;
+			c = getchar(); //wait for input
+
+			system("cls");			//clear console
+			initializeBoard(board); //reset board
+			movesPlayed = 0;		//reset movesPlayed counter
+			continue;				//end current loop
 		}
 		minTurn = RandomAgentTurn(board);	// returns move made on board for MIN Player (random Agent)
 		if (minTurn.movesAccessible == true) {
-			//cout << "MIN moved: x=" << turn.row << ", y=" << turn.col << endl;	// displays what cell/seed/piece the MIN player moved
-			cout << "MIN moved (" << minTurn.row << ", " << minTurn.col << ") dirRow: " << minTurn.directionRow << " dirCol: " << minTurn.directionCol << endl; // displays what cell/seed/piece the MIN player moved where
+			// display what cell and direction the MIN player moved where
+			cout << "MIN moved (" << minTurn.row << ", " << minTurn.col << ") dirRow: " << minTurn.directionRow << " dirCol: " << minTurn.directionCol << endl;
 			movesPlayed++;
 			DisplayCongaBoard(board);
 		}
 		else {
 			cout << "MAX won!!" << endl;
 			cout << "GAME OVER - MOVE COUNT: " << movesPlayed << endl;	// displays move count as game is over and MAX player has won
-			break;
+
+			cout << "Press Enter to play again." << endl;
+			c = getchar(); //wait for input
+
+			system("cls");			//clear console
+			initializeBoard(board); //reset board
+			movesPlayed = 0;		//reset movesPlayed counter
+			continue;				//end current loop
 		}
 	}
 	return 0;
