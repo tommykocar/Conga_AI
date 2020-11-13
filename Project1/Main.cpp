@@ -19,9 +19,12 @@
 #include <vector>
 #include <stdlib.h>
 #include <algorithm>
+#include <chrono>
 #include "Conga.h"
 
 using namespace std;
+
+int pruningCounter = 0;
 
 // This function is here to copy the board we start with so then when we are traveling down the tree for MINIMAX
 void copyboard(struct CELL CopiedBoard[4][4], struct CELL board[4][4]) {
@@ -636,7 +639,7 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 			}
 
 			if (Alpha >= Beta) {
-
+				pruningCounter++;
 				return holder;	// returns holder as it is a worse move so we want to let the MAX node to stick with the move it has already found
 			}
 		}
@@ -649,7 +652,7 @@ int TraverseTree(struct CELL board[4][4], struct PossibleMoves newMove, int numM
 			}
 
 			if (Alpha >= Beta) {
-
+				pruningCounter++;
 				return holder;	// returns holder as it is a worse move so we want to let the MIN node to stick with the move it has found already
 			}
 		}
@@ -677,7 +680,6 @@ struct PossibleMoves MaxTurn(struct CELL board[4][4]) {
 
 	// we call this function to make the move we found to be the best move
 	PlayersMoveMade(board, moveList[highestRatedMove].row, moveList[highestRatedMove].col, moveList[highestRatedMove].directionRow, moveList[highestRatedMove].directionCol);
-
 	move = moveList[highestRatedMove];
 	return move;
 }
@@ -721,23 +723,28 @@ int main() {
 	char c; //used for "play again" feature
 	while (true)
 	{
+		auto t1 = std::chrono::high_resolution_clock::now();
 		maxTurn = MaxTurn(board);	// returns move made on board for MAX player (AI Agent)
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 		if (maxTurn.movesAccessible == true) {
 			// display what cell and direction the MAX player moved where
 			cout << "MAX moved (" << maxTurn.row << ", " << maxTurn.col << ") dirRow: " << maxTurn.directionRow << " dirCol: " << maxTurn.directionCol << endl;
+			cout << "time taken for AI agent to make move: " << duration << endl;
 			DisplayCongaBoard(board);
 			movesPlayed++;
 		}
 		else {
 			cout << "MIN won!!" << endl;
 			cout << "GAME OVER - MOVE COUNT: " << movesPlayed << endl;	// displays move count as game is over and MAX player has won
-
+			cout << "Number of times we pruned: " << pruningCounter << endl;
 			cout << "Press 'P' then Enter to play again." << endl;
 			c = getchar(); //wait for input
 
 			system("cls");			//clear console
 			initializeBoard(board); //reset board
 			movesPlayed = 0;		//reset movesPlayed counter
+			pruningCounter = 0;
 			continue;				//end current loop
 		}
 		minTurn = RandomAgentTurn(board);	// returns move made on board for MIN Player (random Agent)
@@ -750,13 +757,14 @@ int main() {
 		else {
 			cout << "MAX won!!" << endl;
 			cout << "GAME OVER - MOVE COUNT: " << movesPlayed << endl;	// displays move count as game is over and MAX player has won
-
+			cout << "Number of times we pruned: " << pruningCounter << endl;
 			cout << "Press Enter to play again." << endl;
 			c = getchar(); //wait for input
 
 			system("cls");			//clear console
 			initializeBoard(board); //reset board
 			movesPlayed = 0;		//reset movesPlayed counter
+			pruningCounter = 0;
 			continue;				//end current loop
 		}
 	}
